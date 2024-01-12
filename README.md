@@ -1,3 +1,7 @@
+# Code, tóm tắt, đề ở nhánh master
+
+Vào lấy nhá
+
 # Thư mục Tham Khảo - GiaiDe
 
 Chào mừng bạn đến với thư mục "GiaiDe" của cuộc thi Cuối Kì UIT Dotnet. Đây là nơi bạn có thể tìm thấy code giải các đề thi mà bạn đã thực hiện.
