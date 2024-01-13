@@ -33,7 +33,7 @@ Câu 2:
 	}
 
 	View:
-	<form action="NhanVien/cau2">
+	<form action="NhanVien/cau2" method="POST">
 		Số lần sửa <input name="SoLanSua">
 		<button type="submit">Liệt kê</button>
 	</form>	
@@ -66,10 +66,11 @@ Câu 2:
 	}
 
 	Context:
-	public List<NhanVienCau2> getNhanVienCau2(SoLanSua){
+	public List<NhanVienCau2> getNhanVienCau2(int SoLanSua){
 		conn.Open();
-		string query =  "SELECT NV.TenNhanVien, NV.SoDienThoai, SUM(LANTHU) FROM NV_BT, NHANVIEN NV WHERE NV_BT.MaNhanVien=NV.MaNhanVien GROUP BY MANHANVIEN HAVING SUM(LANTHU) > @sl";
+		string query =  "SELECT NV.TenNhanVien, NV.SoDienThoai, SUM(LANTHU) as SOLANSUA FROM NV_BT, NHANVIEN NV WHERE NV_BT.MaNhanVien=NV.MaNhanVien GROUP BY MANHANVIEN HAVING SUM(LANTHU) > @sl";
 		var cmd = new MySqlCommand(query, conn);
+		cmd.Parameters.AddWithValue("@sl", SoLanSua);
 		var reader = cmd.ExecuteReader();
 		var res = new List<NhanVienCau2>();
 		while(reader.Read()){
@@ -121,10 +122,9 @@ a)
 	}
 b)
 	View:
-	
 	@model List<NV_NT>;
 	<h4>Danh sách thiết bị của nhân viên được chọn sửa</h4>
-	<tbale>
+	<table>
 		<thead>
 			<tr>
 				<th>Mã thiết bị</th>
@@ -142,18 +142,18 @@ b)
 					<td>@item.LanThu</td>
 					<td>@item.NgayBaoTri</td>
 					<td>
-						<form action="xoaThietBiCau3c">
+						<form action="xoaThietBiCau3c" method="post">
 							<input type="hidden" name="MaNhanVien" value="@item.MaNhanVien">
 							<input type="hidden" name="MaThietBi" value="@item.MaThietBi">
-							<button type="submit">Delete</button>
+							<button class="btn btn-link" type="submit">Delete</button>
 						</form>
-						<form action="capNhatThietBi">
+						<form action="capNhatThietBi" method="post">
 							<input type="hidden" name="MaNhanVien" value="@item.MaNhanVien">
 							<input type="hidden" name="MaThietBi" value="@item.MaThietBi">
 							<input type="hidden" name="MaCanHo" value="@item.MaCanHo">
 							<input type="hidden" name="LanThu" value="@item.LanThu">
 							<input type="hidden" name="NgayBaoTri" value="@item.NgayBaoTri">
-							<button type="submit">View</button>
+							<button class="btn btn-link" type="submit">View</button>
 						</form>
 					</td>
 				</tr>
@@ -194,9 +194,9 @@ b)
 
 c)
 	Controller:
-	public void xoaThietBiCau3c(NV_BT nvbt){
+	public void xoaThietBiCau3c(string MaNhanVien,string MaThietBi){
 		DBContext db = new DBContext();
-		db.cau3c(nvbt.MaNhanVien, nvbt.MaThietBi);
+		db.cau3c(MaNhanVien, MaThietBi);
 	}
 	
 	Context:
@@ -210,9 +210,8 @@ c)
 
 d)
 	View:
-	
 	@model NV_BT;
-	<form action="capNhatCau3e">
+	<form action="capNhatCau3e" method="post">
 		<input type="hidden" name="MaNhanVien" value="@Model.MaNhanVien">
 		Mã thiết bị <input name="MaThietBi" value="@Model.MaThietBi">
 		Mã căn hộ <input name="MaCanHo" value="@Model.MaCanHo">
