@@ -141,7 +141,8 @@ b)
 					<td>@item.MaCanHo</td>
 					<td>@item.LanThu</td>
 					<td>@item.NgayBaoTri</td>
-					<td>
+					<td>	
+						Cách 1:
 						<form action="xoaThietBiCau3c" method="post">
 							<input type="hidden" name="MaNhanVien" value="@item.MaNhanVien">
 							<input type="hidden" name="MaThietBi" value="@item.MaThietBi">
@@ -155,6 +156,16 @@ b)
 							<input type="hidden" name="NgayBaoTri" value="@item.NgayBaoTri">
 							<button class="btn btn-link" type="submit">View</button>
 						</form>
+
+						Cách 2: (nên dùng)
+						@Html.ActionLink("Delete", "xoaThietBiCau3c", new {MaNhanVien = @item.MaNhanVien, MaThietBi = @item.MaThietBi})
+						@Html.ActionLink("View", "capNhatThietBi", new {
+							MaNhanVien = @item.MaNhanVien,
+							MaThietBi = @item.MaThietBi,
+							MaCanHo = @item.MaCanHo,
+							LanThu = @item.LanThu,
+							NgayBaoTri = @item.NgayBaoTri
+						})
 					</td>
 				</tr>
 			}
