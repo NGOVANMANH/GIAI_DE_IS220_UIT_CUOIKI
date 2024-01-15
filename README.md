@@ -1,4 +1,4 @@
-# Code, tóm tắt, đề ở nhánh master
+# Code, tóm tắt, đề ở nhánh Giải-đề-cuối-kì-IS220-UIT
 
 Vào lấy nhá
 
