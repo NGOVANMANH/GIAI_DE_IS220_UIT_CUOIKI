@@ -21,5 +21,5 @@ Chào mừng bạn đến với thư mục "GiaiDe" của cuộc thi Cuối Kì 
 ## Liên Hệ
 Nếu bạn có bất kỳ câu hỏi nào hoặc muốn chia sẻ thêm thông tin về phương pháp giải của mình, hãy tạo issues hoặc liên hệ qua email: vanmamh0888@gmail.com
 
-Chúc bạn có những trải nghiệm thú vị khi tham gia cuộc thi!
+Chúc bạn thi tốt lấy 10 điểm thì nhớ cho 1 star!
 ---
