@@ -1,0 +1,270 @@
+Câu 1:
+    View:
+        <h3>Thêm hành khách</h3>
+        <form action="HANHKHACH/ThemHanhKhach">
+            Mã hành khách <input type="text" name="MAHK">
+            Tên hành khách <input type="text" name="HOTEN">
+            Địa chỉ <input type="text" name="DIACHI">
+            Điện thoại <input type="text" name="DIENTHOAI">
+            <button type="submit">Thêm</button>
+        </form>
+    
+    Controller:
+        public IActionResult ThemHanhKhach(HANHKHACH hk){
+            DBContext db = new DBContext();
+            db.ThemHanhKhach(hk);
+            return RedirectToAction("Index");
+        }
+    
+    Context:
+        public void ThemHanhKhach(HANHKHACH hk){
+            conn.Open();
+            var cmd = new MySqlCommand($"INSERT INTO HANHKHACH VALUES('{hk.MAHK}', '{hk.HOTEN}', '{hk.DIACHI}', '{hk.DIENTHOAI}')", conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
+Câu 2:
+    Model:
+    public class HANHKHACH2 {
+        public string MACH;
+        public string MAHK;
+        public string HOTEN;
+        public string DIENTHOAI;
+        public bool LOAIGHE;
+        public string SOGHE;
+    }
+
+    View:
+        <h3>Xem thông tin chuyến bay</h3>
+        <form action="CHUYENBAY/XemThongTinChuyenBay">
+            Mã chuyến bay <input type="text" name="MACH">
+            <button type="submit">Liệt kê</button>
+        </form>
+
+    Controller:
+        public IActionResult XemThongTinChuyenBay(string MACH){
+            DBContext db = new DBContext();
+            var thongTinChuyenBay = db.getThongTinChuyenBay(MACH);
+            View["slDatChoVip"] = db.getSoLuongDatChoTheoLoai(MACH, true);
+            View["slDatChoThuong"] = db.getSoLuongDatChoTheoLoai(MACH, false);
+            View["dsHanhKhach"] = db.getDanhSachHanhKhachTheoChuyenBay(MACH);
+            return View(thongTinChuyenBay);
+        }
+
+    Context:
+        public CHUYENBAY getThongTinChuyenBay(string ma){
+            conn.Open();
+            var sql = $"SELECT * FROM CHUYENBAY WHERE MACH='{ma}'";
+            var cmd = new MySqlCommand(sql, conn);
+            var reader = cmd.ExecuteReader();
+            var res = new CHUYENBAY();
+            if(reader.Read()){
+                res = new CHUYENBAY{
+                    MACH = reader["MACH"],
+                    CHUYEN  = reader["CHUYEN"],
+                    DDI = reader["DDI"],
+                    DDEN = reader["DDEN"],
+                    NGAY = reader["NGAY"],
+                    GBAY = reader["GBAY"],
+                    GDEN = reader["GDEN"],
+                    THUONG = reader["THUONG"],
+                    VIP = reader["VIP"],
+                    MAMB = reader["MAMB"]
+                };
+            }
+            conn.Close();
+            return res;
+        }
+
+        public int getSoLuongDatChoTheoLoai(string ma, bool isVip){
+            conn.Open();
+            var sql = $"SELECT COUNT(*) FROM CT_CB WHERE MACH='{ma} AND LOAIGHE={isVip}'";
+            var cmd = new MySqlCommand(sql, conn);
+            var reader = cmd.ExecuteReader();
+            int res = 0;
+            if(reader.Read()){
+                res = reader["sl"];
+            }
+            conn.Close();
+            return res;
+        }
+
+        public List<HANHKHACH2> getDanhSachHanhKhachTheoChuyenBay(string ma){
+            List<HANHKHACH2> res = new List<HANHKHACH2>();
+            conn.Open();
+            var sql = "";
+            var cmd = new MySqlCommand(sql, conn);
+            var reader = cmd.ExecuteReader();
+            while(reader.Read()){
+                res.Add(new HANHKHACH2{
+                    MACH = reader["MACH"],
+                    MAHK = reader["MAHK"],
+                    HOTEN = reader["HOTEN"],
+                    DIENTHOAI = reader["DIENTHOAI"],
+                    LOAIGHE = reader["LOAIGHE"],
+                    SOGHE = reader["SOGHE"]
+                });
+            }
+            conn.Close();
+            return res;
+        }
+
+        View: XemThongTinChuyenBay
+            @model CHUYENBAY;
+            <form action="CT_CB/ThemHanhKhach">
+                Chuyến <input readonly name="CHUYEN" VALUE="@Model.CHUYEN">
+                Điểm đi <input readonly name="DDI" VALUE="@Model.DDI">
+                Điểm đến <input readonly name="DDEN" VALUE="@Model.DDEN">
+                Ngày bay đến <input readonly name="NGAY" VALUE="@Model.NGAY">
+                Giờ đi <input readonly name="GBAY" VALUE="@Model.GBAY">
+                Giờ đến <input readonly name="GDEN" VALUE="@Model.GDEN">
+                Chỗ vip @ViewData["slDatChoVip"]/<b>@Model.VIP</b>
+                Chỗ thường @ViewData["slDatChoThuong"]/<b>@Model.THUONG</b>
+                <input type="hidden" name="MACH" value="@Model.MACH">
+                <button type="submit">Thêm hành khách</button>
+            </form>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Họ tên hành khách</>
+                        <th>Điện thoại</>
+                        <th>Loại ghế</>
+                        <th>Số ghế</>
+                        <th>Chức năng</>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var item in (List<HANHKHACH2>ViewData["dsHanhKhach"])){
+                        <tr>
+                            <td>@item.HOTEN</td>
+                            <td>@item.DIENTHOAI</td>
+                            <td>@(item.LOAIGHE ? "Vip" : "Thường")</td>
+                            <td>@item.SOGHE</td>
+                            <td
+                                <form action="CT_CB/XoaHanhKhach">
+                                    <input type="hidden" name="MAHK" value="@item.MAHK">
+                                    <button type="submit">Xóa</button>
+                                </form>
+
+                                <form action="CT_CB/SuaHanhKhach">
+                                    <input type="hidden" name="MACH" value="@item.MACH">
+                                    <input type="hidden" name="MAHK" value="@item.MAHK">
+                                    <input type="hidden" name="HOTEN" value="@item.HOTEN">
+                                    <input type="hidden" name="DIENTHOAI" value="@item.DIENTHOAI">
+                                    <input type="hidden" name="LOAIGHE" value="@item.LOAIGHE">
+                                    <input type="hidden" name="SOGHE" value="@item.SOGHE">
+                                    <button type="submit">Sửa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        Controller:
+        public IActionResult ThemHanhKhach(CHUYENBAY cb){
+            DBContext db = new DBContext();
+            ViewData["slVip"] = db.getSoLuongDatChoTheoLoai(cb.MACH, true);
+            ViewData["slThuong"] = db.getSoLuongDatChoTheoLoai(cb.MACH, false);
+            return View(cb);
+        }
+
+        public IActionResult SuaHanhKhach(HANHKHACH2 hk){
+            return View(hk);
+        }
+
+Câu 3:
+a)
+    View: ThemHanhKhach
+    @model CHUYENBAY;
+    <h3>Thêm hành khách vào chuyến bay</h3>
+    <form action="CT_CB/ThemHanhKhachVaoDB">
+        Chuyến <input readonly VALUE="@Model.CHUYEN">
+        Điểm đi <input readonly VALUE="@Model.DDI">
+        Điểm đến <input readonly VALUE="@Model.DDEN">
+        Ngày bay đến <input readonly VALUE="@Model.NGAY">
+        Giờ đi <input readonly VALUE="@Model.GBAY">
+        Giờ đến <input readonly VALUE="@Model.GDEN">
+        Chỗ vip @ViewData["slVip"]/<b>@Model.VIP</b>
+        Chỗ thường @ViewData["slThuong"]/<b>@Model.THUONG</b>
+        <input type="hidden" name="MACH" value="@Model.MACH">
+        Mã hành khách <input type="text" name="MAHK">
+        Tên hành khách <input type="text" name="HOTEN">
+        Loại ghế <select name="LOAIGHE">
+            <option value="true">Vip</option>
+            <option value="false">Thuong</option>
+        </select>
+        Số ghế <input name="SOGHE">
+        <button type="submit">Thêm hành khách</button>
+    </form>
+
+    Controller:
+        public void ThemHanhKhachVaoDB(string MACH, string MAHK, string HOTEN, bool LOAIGHE, string SOGHE){
+            DBContext db = ne DBContext();
+            db.ThemHanhKhachVaoDB(MACH, MAHK, HOTEN, LOAIGHE, SOGHE);
+        }
+    
+    Context:
+        public void ThemHanhKhachVaoDB(string MACH, string MAHK, string HOTEN, bool LOAIGHE, string SOGHE){
+            conn.Open();
+            var sql = $"INSERT INTO HANHKHACH(MAHK, HOTEN) VALUES('{MAHK}', '{HOTEN}')";
+            var cmd = new MySqlCommand(sql, conn);
+            cmd.ExecuteNonQuery();
+            sql = $"INSERT INTO CT_CB VALUES('{MACH}', '{MAHK}', '{SOGHE}', {LOAIGHE})";
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
+b)
+    View: SuaHanhKhach
+    @model HANHKHACH2;
+    <h3>Cập nhật thông tin hành khách</h3>
+    <form action="CT_CB/capNhatHanhKhach"> 
+        Mã hành khách <input name="MAHK" value="@Model.MAHK">
+        Tên hành khách <input name="HOTEN" value="@Model.HOTEN">
+        Loại ghế <select name="LOAIGHE" value="@Model.LOAIGHE">
+            <option value="true">Vip</option>
+            <option value="false">Thường</option>
+        </select>
+        Số ghế <input name="@Model.SOGHE">
+        <input type="hidden" name="MACH" value="@Model.MACH">
+        <button type="submit">Cập nhật</button>
+    </form>
+
+    Controller:
+    public IActionResult capNhatHanhKhach(HANHKHACH2 new_hk){
+        DBContext db = new DBContext();
+        db.capNhatHanhKhach(new_hk);
+        return View();
+    }
+
+    Context: 
+    public void capNhatHanhKhach(HANHKHACH2 hk){
+        conn.Open();
+        var sql = $"UPDATE CT_CB SET LOAIGHE={hk.LOAIGHE}, SOGHE='{hk.SOGHE}' WHERE MACH='{hk.MACH}' AND MAHK='{hk.MAHK}'";
+        var cmd = new MySqlCommand(sql, conn);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+    }
+
+c)
+    Controller:
+    public IActionResult XoaHanhKhach(string MAHK){
+        DBContext db = new DBContext();
+        db.XoaHanhKhach(MAHK);
+        return View();
+    }
+
+    Context:
+    public void XoaHanhKhach(string ma){
+        conn.Open();
+        var sql = "DELETE FROM CT_CB WHERE MAHK=@ma";
+        var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@ma", ma);
+        cmd.ExecuteNonQuery();
+        sql = "DELETE FROM HANHKHACH WHERE MAHK=@ma";
+        cmd.Parameters.AddWithValue("@ma", ma);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+    }

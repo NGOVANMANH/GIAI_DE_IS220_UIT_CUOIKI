@@ -1,0 +1,230 @@
+Câu 1:
+    View:
+        <form action="CongViec/ThemCongViec">
+            Mã công việc <input name="MACV">
+            Tên công việc <input name="TENCV">
+            Đơn giá <input name="DONGIA">
+            <button type="submit">Thêm</button>
+        </form>
+    
+    Controller:
+        public IActionResult ThemCongViec(CONGVIEC cv){
+            DBContext db = new DBContext();
+            db.ThemCongViec(cv);
+            return View();
+        }
+
+    Context:
+        public void ThemCongViec(CONGVIEC cv){
+            conn.Open();
+            var sql = $"INSERT INTO CONGVIEC VALUES('{cv.MACV}', '{cv.TENCV}', {cv.DONGIA})";
+            var cmd = new MySqlCommand(sql, conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
+Câu 2:
+    View: Index
+    <form action="BaoDuong/LietKeBaoDuong">
+        Chọn số xe <input name="SOXE">
+        <button type="submit">Liệt kê</button>
+    </form>
+
+    Controller:
+    public IActionResult LietKeBaoDuong(string SOXE){
+        DBContext db = new DBContext();
+        var res = db.LietKeBaoDuong(SOXE);
+        return View(res);
+    }
+
+    Context:
+    public List<BAODUONG> LietKeBaoDuong(string SOXE){
+        conn.Open();
+        var sql = $"SELECT * FROM BAODUONG WHERE SOXE='{SOXE}'";
+        var cmd = new MySqlCommand(sql, conn);
+        var res = new List<BAODUONG>();
+        var reader = cmd.ExecuteReader();
+        while(reader.Read()){
+            res.Add(new BAODUONG{
+                MABD = reader["MABD"],
+                NGAYGIONHAN = reader["NGAYGIONHAN"],
+                NGAYGIOTRA = reader["NGAYGIOTRA"],
+                SOKM = reader["SOKM"],
+                NOIDUNG = reader["NOIDUNG"],
+                SOXE = reader["SOXE"]
+            });
+        }
+        conn.Close();
+        return res;
+    }
+
+    View: LietKeBaoDuong
+    @model List<BAODUONG>;
+    <table>
+        <thead>
+            <tr>
+                <th>Ngày giờ nhận</th>
+                <th>Ngày giờ trả</th>
+                <th>Số km</th>
+                <th>Nội dung</th>
+                <th>Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model){
+                <tr>
+                    <td>@item.NGAYGIONHAN</td>
+                    <td>@item.NGAYGIOTRA</td>
+                    <td>@item.SOKM</td>
+                    <td>@item.NOIDUNG</td>
+                    <td>
+                        @HtmlActionLink("Xem", "XemChiTietBaoDuong", "CT_BD", new {MABD = @item.MABD})
+                        @HtmlActionLink("Sửa", "SuaBaoDuong", "BAODUONG", new {MABD = @item.MABD})
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+Câu 3:
+a)
+    Model:
+        public class ChiTietBaoDuong{
+            public string MABD;
+            public string MACV;
+            public string TENCV;
+            public string DONGIA;
+        }
+
+    View:
+        @model List<ChiTietBaoDuong>;
+        Ngày nhận xe <input type="date" name="NGAYGIONHAN">
+        Ngày trả xe <input type="date" name="NGAYGIOTRA">
+        Thành tiền <input type="number" value="@ViewData["tongTien"]">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên công việc</th>
+                    <th>Đơn giá</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model){
+                    <tr>
+                        <td>@item.TENCV</td>
+                        <td>@item.DONGIA</td>
+                        <td>
+                            @HtmlActionLink("Xóa", "XoaChiTietBaoDuong", "CT_BD", new {MABD=@item.MABD, MACV=@item.MACV})
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    Controller:
+        public IActionResult XemChiTietBaoDuong(string MABD){
+            DBContext db = new DBContext();
+            var res = db.XemChiTietBaoDuong(MABD);
+            ViewData["tongTien"] = db.getTongTien(MABD);
+            return View(res);
+        }
+
+    Context:
+        public List<ChiTietBaoDuong> XemChiTietBaoDuong(string MABD){
+            conn.Open();
+            var res = new List<ChiTietBaoDuong>();
+            var sql = $"SELECT CONGVIEC.*, MABD FROM CT_BD, CONGVIEC WHERE CT_BD.MACV=CONGVIEC.MACV AND MABD='{MABD}'";
+            var cmd = new MySqlCommand(sql, conn);
+            var reader = cmd.ExecuteReader();
+            while(reader.Read()){
+                res.Add(new ChiTietBaoDuong{
+                    MABD = reader["MABD"],
+                    MACV = reader["MACV"],
+                    TENCV = reader["TENCV"],
+                    DONGIA = reader["DONGI"]
+                });
+            }
+            conn.Close();
+            return res;
+        }
+
+        public double getTongTien(string MABD){
+            conn.Open();
+            double res = 0;
+            var cmd = new MySqlCommand($"SELECT SUM(DONGIA) as tt FROM CT_BD, CONGVIEC WHERE CT_BD.MACV=CONGVIEC.MACV AND MABD='{MABD}');
+            var reader = cmd.ExecuteReader()
+            if(reader.Read()) res = reader["tt"];
+            conn.Close();
+            return res;
+        }
+
+b)
+    Controller:
+        public IActionResult XoaChiTietBaoDuong(string MABD, string MACV){
+            DBContext db = new DBContext();
+            db.XoaChiTietBaoDuong(MABD, MACV);
+            return View();
+        }
+
+    Context:
+        public void XoaChiTietBaoDuong(string MABD, string MACV){
+            conn.Open();
+            var cmd = new MySqlCommand($"DELETE FROM CT_BD WHERE MABD='{MABD}' AND MACV='{MACV}'", conn);
+            conn.Close();
+        }
+
+c)
+    View:
+        @model BAODUONG;
+        <form action="BAODUONG/CapNhatBaoDuong">
+            Ngày giờ nhận xe <input type="date" name="NGAYGIONHAN" value="@Model.NGAYGIONHAN">
+            Ngày giờ trả xe <input type="date" name="NGAYGIOTRA">
+            Số km <input type="number" name="SOKM" value="@Model.SOKM">
+            Nội dung <input name="NOIDUNG" value="@Model.NOIDUNG">
+            <input type="hidden" name="MABD" value="@Model.MABD">
+            <button type="submit">Cập nhật</button>
+        </form>
+
+    Controller:
+        public IActionResult SuaBaoDuong(string MABD){
+            DBContext db = new DBContext();
+            var res = db.getBaoDuong(MABD);
+            return View(res);
+        }
+    
+    Context:
+        public BAODUONG getBaoDuong(string MABD){
+            conn.Open();
+            var cmd = new MySqlCommand($"SELECT * FROM BAODUONG WHERE MABD='{MABD}'", conn);
+            var res = new BAODUONG();
+            var reader = cmd.ExecuteReader();
+            if(reader.Read()){
+                res = new BAODUONG{
+                    MABD = reader["MABD"],
+                    NGAYGIONHAN = reader["NGAYGIONHAN"],
+                    NGAYGIOTRA = reader["NGAYGIOTRA"],
+                    SOKM = reader["SOKM"],
+                    NOIDUNG = reader["NOIDUNG"],
+                    SOXE = reader["SOXE"]
+                };
+            }
+            conn.Close();
+            return res;
+        }
+e)
+    Controller:
+        public IActionResult CapNhatBaoDuong(BAODUONG bd){
+            DBContext db = new DBContext();
+            db.CapNhatBaoDuong(BAODUONG bd);
+            return View();
+        }
+    
+    Context:
+        public void CapNhatBaoDuong(BAODUONG bd){
+            conn.Open();
+            var cmd = new MySqlCommand($"UPDATE BAODUONG SET NGAYGIOTRA='{bd.NGAYGIOTRA}' WHERE MABD='{bd.MABD}'", conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
