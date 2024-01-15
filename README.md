@@ -7,8 +7,7 @@ Vào lấy nhá
 Chào mừng bạn đến với thư mục "GiaiDe" của cuộc thi Cuối Kì UIT Dotnet. Đây là nơi bạn có thể tìm thấy code giải các đề thi mà bạn đã thực hiện.
 
 ## Cấu Trúc Thư Mục
-- `De1`: Nơi chứa mã nguồn giải đề 1.
-- `De2`: Nơi chứa mã nguồn giải đề 2.
+- `De2`: Nơi chứa đề và lời giải cho từng câu của đề (chỉ cần đọc hiểu photo và chép thôi).
 - ...
 - 
 ## Hướng Dẫn Sử Dụng
