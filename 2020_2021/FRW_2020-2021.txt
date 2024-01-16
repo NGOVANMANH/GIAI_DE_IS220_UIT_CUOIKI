@@ -66,10 +66,11 @@ Câu 2:
 	}
 
 	Context:
-	public List<NhanVienCau2> getNhanVienCau2(SoLanSua){
+	public List<NhanVienCau2> getNhanVienCau2(int SoLanSua){
 		conn.Open();
 		string query =  "SELECT NV.TenNhanVien, NV.SoDienThoai, SUM(LANTHU) FROM NV_BT, NHANVIEN NV WHERE NV_BT.MaNhanVien=NV.MaNhanVien GROUP BY MANHANVIEN HAVING SUM(LANTHU) > @sl";
 		var cmd = new MySqlCommand(query, conn);
+		cmd.Parameters.AddWithValue("@sl", SoLanSua);
 		var reader = cmd.ExecuteReader();
 		var res = new List<NhanVienCau2>();
 		while(reader.Read()){
